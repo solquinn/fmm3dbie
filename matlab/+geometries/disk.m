@@ -1,8 +1,8 @@
 function [S] = disk(scales, rmid, npars, norder, iptype, iort)
-% DISK Create discretized scaled unit disk 
+% DISK Create discretized scaled unit disk
 %
 % Surface is the disk scaled by scales(1) in the first coordinate,
-% and scales(2) in the second cooridnates. 
+% and scales(2) in the second cooridnates.
 %
 % In the unscaled version, the interior [-rmid, rmid]^2 is first
 % subdivided into npars(1)*npars(1) quads. The annular region between
@@ -22,11 +22,11 @@ function [S] = disk(scales, rmid, npars, norder, iptype, iort)
 %   S = geometries.disk(scales, rmid, npars, norder, iptype, iort)
 %
 %   If arguments scales, rmid, npars, norder, iptype, and/or iort are empty,
-%   defaults are used 
+%   defaults are used
 %
 %  Input arguments:
 %    * scales(3): (optional, [1,1])
-%        scaling parameters for the coordinates of the disk 
+%        scaling parameters for the coordinates of the disk
 %    * rmid: (optional, 1/2)
 %        size of interior square in the discretization
 %    * npars(3): integer (optional, [3,3,3])
@@ -42,15 +42,15 @@ function [S] = disk(scales, rmid, npars, norder, iptype, iort)
 %        * iptype = 11, quadrangular patch discretized using tensor
 %                       product Gauss-Legendre nodes
 %        * iptype = 12, quadrangular patch discretized using tensor
-%                       product Chebyshev 
+%                       product Chebyshev
 %    * iort: (optional, 1)
 %         orientation vector, normals point in the unbounded region
 %         if iort = 1, and in the interior of the startorus otherwise
-%    
+%
 % Example
 %   % create 8th-order GL-quad patch for an ellipse with semi-major
 %   axes (1,0.5):
-%   S = geometries.disk([1,0.5], [], [], 8, 11)
+%   S = geometries.disk([1,0.5], [], [], [], 8, 11)
 %
   if nargin < 1 || isempty(scales)
     scales = [1;1];
@@ -61,7 +61,7 @@ function [S] = disk(scales, rmid, npars, norder, iptype, iort)
   end
 
   if nargin < 3 || isempty(npars)
-    npars = [3;3;ceil(3*pi*(1+rmid)/4/(1-rmid))];
+    npars = [3;3;3];
   end
 
   if nargin < 4 || isempty(norder)
@@ -78,11 +78,11 @@ function [S] = disk(scales, rmid, npars, norder, iptype, iort)
 
 
   if iptype == 1
-    npatches = 2*(npars(1)*npars(1) + 4*npars(2)*npars(3));
-    npts = npatches*(norder+1)*(norder+2)/2;
+    npatches = 2*(npars(1)*npars(1) + 4*npars(2)*npars(3))
+    npts = npatches*(norder+1)*(norder+2)/2
   elseif iptype == 11 || iptype == 12
-    npatches = npars(1)*npars(1) + 4*npars(2)*npars(3);
-    npts = npatches*(norder+1)*(norder+1);
+    npatches = npars(1)*npars(1) + 4*npars(2)*npars(3)
+    npts = npatches*(norder+1)*(norder+1)
   end
 
   npp1 = npatches+1;
@@ -110,12 +110,4 @@ function [S] = disk(scales, rmid, npars, norder, iptype, iort)
 
 end
 %
-%-------------------------------------------------------------
-
 %
-%
-%
-%%   Common routines
-%%
-%
-%-------------------------------------------------
