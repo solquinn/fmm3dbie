@@ -1,4 +1,4 @@
-implicit real *8 (a-h,o-z)
+      implicit real *8 (a-h,o-z)
       real *8 src(3), targ(12)
       complex *16 ima,z0,refval
       real *8 val
