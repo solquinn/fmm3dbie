@@ -12,7 +12,8 @@
 CC = gcc
 CXX = g++
 FC = gfortran
-FFLAGS = -fPIC -O3 -march=native -funroll-loops -std=legacy -w 
+FFLAGS = -fPIC -O3 -march=native -funroll-loops -std=legacy -w
+FFLAGS2 = -fPIC -march=native -std=legacy
 
 # extra flags for multithreaded: C/Fortran, MATLAB
 OMPFLAGS =-fopenmp
@@ -123,7 +124,7 @@ HOBJS = $(HELM)/helm_comb_dir.o $(HELM)/helm_rpcomb_neu.o \
 # Laplace wrappers
 LAP = src/lap_wrappers
 LOBJS = $(LAP)/lap_comb_dir.o $(LAP)/lap_s_neu.o \
-		$(LAP)/lap2d_slp.o
+        $(LAP)/lap2d_slp.o
 
 # Maxwell wrappers
 EM = src/maxwell
@@ -133,29 +134,24 @@ EMOBJS = $(EM)/em_mfie_pec.o $(EM)/em_aumfie_pec.o \
 	$(EM)/em_sdpie_pec.o $(EM)/em_cfie_rwg_pec.o \
 	$(EM)/maxwell_common_evaluators.o \
 	$(EM)/incoming_fields.o \
-	$(EM)/fix_tri.o $(EM)/analytic_sphere_pw_pec.o
+	$(EM)/fix_tri.o $(EM)/analytic_sphere_pw_pec.o \
+	$(EM)/em_muller_trans.o
 
 # Stokes wrappers
 STOK = src/stok_wrappers
 STOKOBJS = $(STOK)/stok_comb_vel.o 
 
-# Beltrami wrappers
-LB = src/lap_bel
-LBOBJS = $(LB)/helm_bel_routs.o $(LB)/stok_bel_routs.o 
-
 # Kernels
 KER = src/kernels
 KOBJS = $(KER)/helm_kernels.o $(KER)/lap_kernels.o $(KER)/DPIE_kernels.o \
-	$(KER)/yuk_kernels.o $(KER)/stok_kernels.o $(KER)/em_kernels.o \
-	$(KER)/hank101.o $(KER)/lap_bel_kernels.o $(KER)/stok_bel_kernels.o
+	$(KER)/yuk_kernels.o $(KER)/stok_kernels.o $(KER)/em_kernels.o
 
 # Quadrature wrappers
 QUAD = src/quadratures
 QOBJS = $(QUAD)/far_field_routs.o \
 	$(QUAD)/ggq-selfquad-routs.o $(QUAD)/ggq-quads.o \
-	$(QUAD)/ggq-selfquad.o \
-	$(QUAD)/near_field_routs.o $(QUAD)/near_quad_sub.o \
-	$(QUAD)/theta-quads/theta_tables.o $(QUAD)/theta-quads/logquad.o 
+	$(QUAD)/adap-quads.o \
+	$(QUAD)/near_field_routs.o $(QUAD)/near_quad_sub.o
 
 # Surface wrappers
 SURF = src/surface_routs
@@ -190,9 +186,9 @@ SURFSM_MOD_OBJS = $(SURFSM)/Mod_TreeLRD.o \
 # Add to FFLAGS so that modules get compiled in the .mod folder
 FFLAGS += -J .mod/
 
-OBJS = $(COMOBJS) $(EMOBJS) $(HOBJS) $(KOBJS) $(LBOBJS) $(LOBJS) $(QOBJS) $(SOBJS) $(TOBJS) $(STOKOBJS) $(QOBJS2)
+OBJS = $(COMOBJS) $(EMOBJS) $(HOBJS) $(KOBJS) $(LOBJS) $(QOBJS) $(SOBJS) $(TOBJS) $(STOKOBJS) $(QOBJS2)
 
-OBJS_64 = $(COMOBJS) $(EMOBJS) $(HOBJS) $(KOBJS) $(LBOBJS)  $(LOBJS) $(QOBJS) $(SOBJS) $(TOBJS) $(STOKOBJS) $(QOBJS2)
+OBJS_64 = $(COMOBJS) $(EMOBJS) $(HOBJS) $(KOBJS) $(LOBJS) $(QOBJS) $(SOBJS) $(TOBJS) $(STOKOBJS) $(QOBJS2)
 OBJS_64 += $(COM)/lapack_wrap_64.o
 
 ifeq ($(BLAS_64),ON)
@@ -247,6 +243,12 @@ usage:
 %.o: %.c %.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
+#
+# Special rule for ggq-quads
+#
+QUAD = src/quadratures
+$(QUAD)/ggq-selfquad-routs.o: $(QUAD)/ggq-selfquad-routs.f90
+	$(FC) -c $(FFLAGS2) $< -o $@
 
 #
 # build the library...
@@ -424,8 +426,10 @@ QTOBJS = test/quad_routs/test_quadintrouts.o test/quad_routs/test_dquadintrouts.
 test/quad: $(QTOBJS)
 	$(FC) $(FFLAGS) test/quad_routs/test_quadrouts.f -o test/quad_routs/int2-quad $(QTOBJS) lib-static/$(STATICLIB) $(LIBS) 
 
-test/quadrature:
-	$(FC) $(FFLAGS) test/quadratures/test_find_near.f -o test/quadratures/int2-quad lib-static/$(STATICLIB) $(LIBS) 
+
+QQOBJS = test/quadratures/test_find_near.o test/quadratures/test_adap_quad_self.o
+test/quadrature: $(QQOBJS)
+	$(FC) $(FFLAGS) test/quadratures/test_quadratures.f -o test/quadratures/int2-quad $(QQOBJS) lib-static/$(STATICLIB) $(LIBS) 
 
 
 #
@@ -452,8 +456,8 @@ test/quad-dyn: $(QTOBJS)
 	$(FC) $(FFLAGS) test/quad_routs/test_quadrouts.f -o test/quad_routs/int2-quad $(QTOBJS) -L$(FMMBIE_INSTALL_DIR) $(LLINKLIB) $(LIBS)
 
 
-test/quadrature-dyn:
-	$(FC) $(FFLAGS) test/quadratures/test_find_near.f -o test/quadratures/int2-quad -L$(FMMBIE_INSTALL_DIR) $(LLINKLIB) $(LIBS) 
+test/quadrature-dyn: $(QQOBJS)
+	$(FC) $(FFLAGS) test/quadratures/test_quadratures.f -o test/quadratures/int2-quad $(QQOBJS) -L$(FMMBIE_INSTALL_DIR) $(LLINKLIB) $(LIBS) 
 
 
 # 
