@@ -416,12 +416,35 @@ subroutine l2d_slp(src, ndt,targ, ndd,dpars,ndz,zk,ndi,ipars,val)
 
   dx=targ(1)-src(1)
   dy=targ(2)-src(2)
-  dz=targ(3)-src(3)
 
-  r=sqrt(dx**2+dy**2+dz**2)
+  r=sqrt(dx**2+dy**2)
 
   val = -2*over4pi*log(r)
 
   return
 end subroutine l2d_slp
 
+
+subroutine l2d_sprime(srcinfo,ndt,targinfo,ndd,dpars,ndz,zk,ndi,ipars,val)
+  implicit real *8 (a-h,o-z)
+  real *8 :: srcinfo(*), targinfo(12),dpars(ndd)
+  integer ipars(ndi)
+  real *8 :: val
+  real *8 :: over4pi
+  complex *16 :: zk
+
+  data over4pi/0.07957747154594767d0/
+  !
+  ! returns the normal derivative of the single layer kernel
+  !
+
+  dx = targinfo(1) - srcinfo(1)
+  dy = targinfo(2) - srcinfo(2)
+
+  d = dx*targinfo(10) + dy*targinfo(11)
+  r = sqrt(dx**2 + dy**2)
+
+  val =  -2*d/(r**2)*over4pi
+
+  return
+end subroutine l2d_sprime
