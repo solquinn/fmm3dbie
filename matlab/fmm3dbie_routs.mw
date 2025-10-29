@@ -5491,13 +5491,82 @@ function [S] = disk(scales, rmid, npars, norder, iptype, iort)
 end
 %
 %
-@ +lap2d/v2b_neu.m 
+@ +lap2d/v2b_neu.m
 function A = v2b_neu(S,targinfo,eps,ipatch_id,uvs_targ)
 %
 %  lap2d.v2b_neu
 %
 %  Syntax
 %   A = lap2d.v2b_neu(S,targinfo,zpars,eps)
+%
+%  Integral representation
+%     pot = \int G_S(r,r') \sigma(r') dA(r')
+%
+%  Note: for targets on surface, only principal value part of the
+%    layer potential is returned
+%
+%  Input arguments:
+%    * S: surfer object, see README.md in matlab for details
+%    * targinfo: target info
+%       targinfo.r = (3,nt) target locations
+%       targinfo.patch_id (nt,) patch id of target, = -1, if target
+%          is off-surface (optional)
+%       targinfo.uvs_targ (2,nt) local uv ccordinates of target on
+%          patch if on-surface (optional)
+%    * eps: precision requested
+%
+
+    [srcvals,srccoefs,norders,ixyzs,iptype,wts] = extract_arrays(S);
+    [n12,npts] = size(srcvals);
+    [n9,~] = size(srccoefs);
+    [npatches,~] = size(norders);
+    npatp1 = npatches+1;
+    npp1 = npatches+1;
+
+    [targs] = extract_targ_array(targinfo);
+    [ndtarg,ntarg] = size(targs);
+    ntargp1 = ntarg+1;
+
+    n3 = 3;
+    row_ptr = 1:npatches:(npatches*ntarg+1);
+    col_ind = repmat(1:npatches,[1,ntarg]);
+    row_ptr = row_ptr(:);
+    col_ind = col_ind(:);
+    zpuse = 1j;
+    nnz = npatches*ntarg;
+    nnzp1 = nnz + 1;
+    iquadtype = 1;
+    ntp1 = npts + 1;
+    npols = ixyzs(2) - ixyzs(1);
+
+    rfac0 = 1.25;
+
+    if nargin < 5
+    ipatch_id = zeros(ntarg,1);
+    uvs_targ = zeros(2,ntarg);
+    end
+
+    iquad = 1:npols:(npts*ntarg+1);
+    nquad = iquad(nnzp1)-1;
+    A = zeros(1,nquad);
+    zpars = 0;
+
+    # FORTRAN getnearquad_lap2d_sprime_new(int[1] npatches,int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, int[ntarg] ipatch_id, double[2,ntarg] uvs_targ, double[1]  eps, dcomplex[1] zpars, int[1] iquadtype, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad] A);
+
+    A = reshape(A,[S.npts size(targinfo.r,2)]).';
+end
+%
+%
+%
+%
+%
+@ +lap2d/evalmat.m
+function A = evalmat(S,targinfo,eps,ipatch_id,uvs_targ)
+%
+%  lap2d.evalmat
+%
+%  Syntax
+%   A = lap2d.evalmat(S,targinfo,zpars,eps)
 %
 %  Integral representation
 %     pot = \int G_S(r,r') \sigma(r') dA(r')
@@ -5551,7 +5620,9 @@ function A = v2b_neu(S,targinfo,eps,ipatch_id,uvs_targ)
     nquad = iquad(nnzp1)-1;
     A = zeros(1,nquad);
 
-    # FORTRAN getnearquad_lap2d_sprime_neu(int[1] npatches,int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, int[ntarg] ipatch_id, double[2,ntarg] uvs_targ, double[1]  eps, int[1] iquadtype, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad] A);
+    # FORTRAN getnearquad_lap2d_slp_eval(int[1] npatches,int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, int[ntarg] ipatch_id, double[2,ntarg] uvs_targ, double[1]  eps, int[1] iquadtype, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad] A);
+
+    A = reshape(A,[S.npts size(targinfo.r,2)]).';
 end
 %
 %
