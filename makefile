@@ -32,7 +32,7 @@ MOMPFLAGS = -D_OPENMP
 MEX=mex
 
 # For experts, location of Mwrap executable
-MWRAP=../../mwrap/mwrap
+MWRAP=~/git/mwrap/mwrap
 MEXLIBS=-lm -lstdc++ -ldl -lgfortran
 
 FMMBIE_INSTALL_DIR=$(PREFIX)
