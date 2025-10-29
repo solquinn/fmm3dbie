@@ -1,6 +1,6 @@
 S = geometries.disk([],[],[5 5 5],8);
 
-targinfo = []; targinfo.r = [-1;1];
+targinfo = []; targinfo.r = [-1;1;0];
 targinfo.n = targinfo.r;
 
 dens = test_fn(S.r(1,:),S.r(2,:)).';

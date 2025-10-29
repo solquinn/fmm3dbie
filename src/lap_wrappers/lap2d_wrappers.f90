@@ -482,7 +482,7 @@
         end
 
 
-      subroutine getnearquad_lap2d_sprime_new(npatches, norders, &
+      subroutine getnearquad_lap2d_sprime_neu(npatches, norders, &
         ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, &
         ipatch_id, uvs_targ, eps, zpars, iquadtype, nnz, row_ptr, &
         col_ind, iquad, rfac0, nquad, wnear)
