@@ -3,40 +3,33 @@ S = geometries.disk([],[],[3 3 3],8);
 figure(1); clf
 plot(S,rand(S.npatches,1))
 
-%%
 A = lap2d.slp_matgen(S,1e-9);
 A = reshape(A,[S.npts,S.npts]).';
 
-%%
+tic;
+[v2v_cor,nover] = lap2d.get_quad_cor_sub(S, 1e-12);
+toc;
+
+v2v_apply = @(mu) apply_lap2d_v2v(S,mu,v2v_cor,nover);
 
 V = eval_gauss(S.r);
 rhs = eval_gauss(S.r);
 
-lhs = -eye(S.npts) + V.*A;
+lhsmat = -eye(S.npts) + V.*A;
+lhs = @(mu) -mu + V.*v2v_apply(mu);
 
-sigma = lhs \ rhs;
+mu = gmres(@(mu) lhs(mu),rhs,[],1e-10,2000);
+u = v2v_apply(mu);
 
-t = tiledlayout(1,4);
+resid = abs(get_surface_laplacian(S,u) + V.*u - rhs) / max(abs(mu));
+
+
+t = tiledlayout(1,2);
 nexttile
-plot(S,rhs)
+plot(S,u)
 colorbar
 view(0,90)
-title('f')
-
-nexttile
-plot(S,V)
-colorbar
-view(0,90)
-title('V')
-
-nexttile
-plot(S,sigma)
-colorbar
-view(0,90)
-title('\sigma')
-
-u = A* sigma;
-resid = get_surface_laplacian(S,u) + V.*u - rhs;
+title('u')
 
 nexttile 
 scatter(S.r(1,:),S.r(2,:),8,log10(abs(resid)))

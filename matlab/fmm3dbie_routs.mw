@@ -5629,3 +5629,151 @@ end
 %
 %
 %
+@ +lap2d/get_quad_cor_sub.m
+function xmat = get_quad_cor_sub(S, eps)
+
+    lap2d_kern = kernel('l','s');
+
+    [srcvals,srccoefs,norders,ixyzs,iptype,wts] = extract_arrays(S);
+    npatches = S.npatches;
+    npts = S.npts;
+    ndtarg = 3;
+
+    % [patch_id, uvs_targ] = get_patch_id_uvs(S);
+
+    %this might need fixing
+
+    iptype_avg = floor(sum(iptype)/(npatches+0.0d0));
+    norder_avg = floor(sum(norders)/(npatches+0.0d0));
+
+    [rfac, rfac0] = get_rfacs(norder_avg,iptype_avg);
+    % prin2('rfac = *',rfac,1)
+    % prin2('rfac0 = *',rfac0,1)
+
+        % allocate(cms(3,npatches),rads(npatches),rad_near(npatches))
+
+    [cms, rads] = get_centroid_rads(npatches,norders,ixyzs,iptype,npts, ... 
+       srccoefs);
+
+    rad_near = rads*rfac;
+
+    % 
+    % find near quadrature correction interactions
+    % 
+
+    targs = srcvals(1:3,:);
+    ntarg = npts;
+
+    % prinf('entering find near mem',0,0)
+    nnz = findnearmem(cms, npatches, rad_near, ndtarg, targs, npts);
+    % prinf('nnz = *',nnz,1);
+
+    [row_ptr,col_ind] = findnear(cms,npatches,rad_near,ndtarg,targs,npts,nnz);
+
+    iquad = get_iquad_rsc(npatches,ixyzs,npts,ntarg,nnz,row_ptr,col_ind);
+     
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % wts = get_qwts_f(npatches,norders,ixyzs,iptype,ntarg,srcvals);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %   compute near quadrature correction
+
+    nquad = iquad(nnz+1)-1;
+
+    iquadtype = 1;
+
+    % Q = []; Q.targinfo = S; Q.rfac = rfac; Q.wavenumber = 0; 
+    % Q.row_ptr = row_ptr; Q.col_ind = col_ind; Q.kernel_order = -1;
+    % novers = get_oversampling_parameters(S,Q,eps);
+    norderup = 2;
+
+    wnear = zeros(nquad,1,'like',1);
+
+    # FORTRAN getnearquad_lap2d_slp(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, double[1] eps, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0,int[1] nquad, inout double[nquad] wnear);
+
+    npols = ixyzs(2:end)-ixyzs(1:end-1);
+    npts_col = npols(col_ind);
+
+    [nt,~] = size(row_ptr);
+    ntarg = nt-1;
+    nrep = zeros(ntarg,1);
+    istarts = row_ptr(1:end-1);
+    iends = row_ptr(2:end)-1;
+    icol_ind = zeros(sum(npts_col),1);
+    isrcinds = cell(npatches,1);
+    for i=1:npatches
+        isrcinds{i} = ixyzs(i):ixyzs(i+1)-1;
+    end
+
+    istart = 1;
+    for i=1:ntarg
+        nrep(i) = sum(npts_col(istarts(i):iends(i))); 
+        iinds = horzcat(isrcinds{col_ind(istarts(i):iends(i))});
+        nelem = length(iinds);
+        icol_ind(istart:istart+nelem-1) = iinds;
+        istart = istart+nelem;
+    end
+    irow_ind = repelem((1:ntarg)',nrep);    
+    
+    xmat = sparse(irow_ind,icol_ind, wnear, ntarg, S.npts);
+
+    Asmth_over = smooth_sparse_quad(lap2d_kern,targs,S,row_ptr,col_ind,norderup); 
+
+    xmat = xmat - Asmth_over;
+
+end
+%
+%
+%
+%
+%
+%
+%
+%
+@ src/get_rfacs.m
+function [rfac, rfac0] = get_rfacs(norder_avg, iptype_avg)
+    rfac = 0;
+    rfac0 = 0;
+    # FORTRAN get_rfacs(int[1] norder_avg, int[1] iptype_avg, inout double[1] rfac, inout double[1] rfac0);
+end
+
+@ src/get_centroid_rads.m
+function [cms, rads] = get_centroid_rads(npatches,norders,ixyzs,iptype,npts, ...
+      srccoefs)
+    n3 = 3;
+    [n9,~] = size(srccoefs);
+    cms = zeros(3,npatches);
+    rads = zeros(npatches,1);
+    npatp1 = npatches+1;
+
+    # FORTRAN get_centroid_rads(int[1] npatches,int[npatches] norders,int[npatp1] ixyzs,int[npatches] iptype,int[1] npts,double[n9,npts] srccoefs,inout double[n3,npatches] cms,inout double[npatches] rads);
+end
+
+@ src/findnearmem.m
+function nnz = findnearmem(cms, npatches, rad_near, ndtarg, targs, ntarg)
+    nnz = 0;
+    n3 = 3;
+
+    # FORTRAN findnearmem(double[n3,npatches] cms,int[1] npatches,double[npatches] rad_near,int[1] ndtarg,double [ndtarg,ntarg] targs,int[1] ntarg,inout int[1] nnz);
+end
+
+@ src/findnear.m
+function [row_ptr, col_ind] = findnear(cms,npatches,rad_near,ndtarg,targs,ntarg,nnz)
+    row_ptr = zeros(ntarg+1,1);
+    col_ind = zeros(nnz,1);
+    n3 = 3;
+
+    ntp1 = ntarg+1;
+    nnzp1 = nnz+1;
+    # FORTRAN findnear(double[n3,npatches] cms,int[1] npatches,double[npatches] rad_near,int[1] ndtarg,double [ndtarg,ntarg] targs, int[1] ntarg,inout int[ntp1] row_ptr,inout int[nnz] col_ind);
+end
+
+@ src/get_iquad_rsc.m
+function iquad = get_iquad_rsc(npatches,ixyzs,npts,ntarg,nnz,row_ptr,col_ind)
+    iquad = zeros(nnz+1,1);
+    npp1 = npatches+1;
+    ntp1 = ntarg+1;
+    nnzp1 = nnz+1;
+    # FORTRAN get_iquad_rsc(int[1] npatches,int[npp1] ixyzs,int[1] npts,int[1] nnz,int[ntp1] row_ptr,int[nnz] col_ind,inout int[nnzp1] iquad);
+end
