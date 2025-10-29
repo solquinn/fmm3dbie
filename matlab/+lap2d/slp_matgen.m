@@ -3,7 +3,7 @@ function A = slp_matgen(S, eps)
 %  lap2d.slp_matgen
 %
 %  Syntax
-%   A = lap2d.slp_matgen(S,zpars,eps)
+%   A = lap2d.slp_matgen(S,eps)
 %
 %  Integral representation
 %     pot = (Update representation here)
@@ -13,7 +13,6 @@ function A = slp_matgen(S, eps)
 %
 %  Input arguments:
 %    * S: surfer object, see README.md in matlab for details
-%    * zpars: parameters. zpars(1:3) are the roots, zpars(4:6) are the residues
 %    * eps: precision requested
 %
 
@@ -36,7 +35,7 @@ function A = slp_matgen(S, eps)
     ntp1 = npts + 1;
     npols = ixyzs(2) - ixyzs(1);
     iquad = 1:npols:(npts*npts+1);
-    A = complex(zeros(npts,npts));
+    A = zeros(npts,npts);
     rfac0 = 1.25;
     nquad = npts*npts;
 

@@ -401,14 +401,9 @@ subroutine l2d_slp(src, ndt,targ, ndd,dpars,ndz,zk,ndi,ipars,val)
   implicit real *8 (a-h,o-z)
   real *8 :: src(*), targ(ndt),dpars(ndd)
   integer ipars(ndi)
+  real *8 dx, dy, r
   real *8 over4pi
-
-  complex *16 :: zk
   real *8 :: val
-
-  complex *16 :: ima
-
-  data ima/(0.0d0,1.0d0)/
   data over4pi/0.07957747154594767d0/
   !
   ! returns the Laplace single layer potential kernel
@@ -425,26 +420,25 @@ subroutine l2d_slp(src, ndt,targ, ndd,dpars,ndz,zk,ndi,ipars,val)
 end subroutine l2d_slp
 
 
-subroutine l2d_sprime(srcinfo,ndt,targinfo,ndd,dpars,ndz,zk,ndi,ipars,val)
+subroutine l2d_sprime(src,ndt,targ,ndd,dpars,ndz,zk,ndi,ipars,val)
   implicit real *8 (a-h,o-z)
-  real *8 :: srcinfo(*), targinfo(12),dpars(ndd)
+  real *8 :: src(*),targ(ndt),dpars(ndd)
   integer ipars(ndi)
+  real *8 dx, dy, r2, ndotr
   real *8 :: val
   real *8 :: over4pi
-  complex *16 :: zk
-
   data over4pi/0.07957747154594767d0/
   !
   ! returns the normal derivative of the single layer kernel
   !
 
-  dx = targinfo(1) - srcinfo(1)
-  dy = targinfo(2) - srcinfo(2)
+  dx = targ(1) - src(1)
+  dy = targ(2) - src(2)
 
-  d = dx*targinfo(10) + dy*targinfo(11)
-  r = sqrt(dx**2 + dy**2)
+  ndotr = dx*targ(10) + dy*targ(11)
+  r2 = dx**2 + dy**2
 
-  val =  -2*d/(r**2)*over4pi
+  val =  -2*ndotr/r2*over4pi
 
   return
 end subroutine l2d_sprime

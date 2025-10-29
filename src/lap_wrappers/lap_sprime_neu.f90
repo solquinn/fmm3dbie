@@ -115,7 +115,7 @@
       integer, intent(in) :: npatches, npts
       integer, intent(in) :: norders(npatches), ixyzs(npatches+1)
       integer, intent(in) :: iptype(npatches)
-      real *8, intent(in) ::  srccoefs(9,npts), srcvals(12,npts)
+      real *8, intent(in) :: srccoefs(9,npts), srcvals(12,npts)
       integer, intent(in) :: ndtarg, ntarg
       real *8, intent(in) :: targs(ndtarg, ntarg)
       integer, intent(in) :: ipatch_id(ntarg)
@@ -126,52 +126,34 @@
       integer, intent(in) :: iquad(nnz+1)
       real *8, intent(in) :: rfac0
       integer, intent(in) :: nquad
-      complex *16, intent(out) :: wnear(1,nquad)
+      real *8, intent(out) :: wnear(nquad)
 
 !  Temporary variables      
-      complex *16 zk, ima, zpars_tmp(6)
-      integer ipv, ndd, ndi, ndz, i
-      real *8 dpars
-      integer ipars
-      complex *16, allocatable :: wneartmp(:)
+      integer ipv, ndd, ndi, ndz
+      real *8 dpars(1)
+      complex *16 zpars(1)
+      integer ipars(1)
   
       procedure (), pointer :: fker
 ! replace kernels here      
       external l2d_sprime
 
-      data ima/(0.0d0,1.0d0)/
-    
       ndd = 0
-      ndz = 6
+      ndz = 0
       ndi = 0
 
-
-      allocate(wneartmp(nquad))
-    
     
       if (iquadtype.eq.1) then
         ipv = 0
 
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
-        do i=1,nquad
-          wneartmp(i) = 0 
-        enddo
-!$OMP END PARALLEL DO
-        fker => gshelm_sp_kern
-        call zgetnearquad_ggq_guru(npatches, norders, ixyzs, &
+        fker => l2d_sprime
+        call dgetnearquad_ggq_guru(npatches, norders, ixyzs, &
           iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, &
           ipatch_id, uvs_targ, eps, ipv, fker, ndd, dpars, ndz, &
           zpars, ndi, ipars, nnz, row_ptr, col_ind, iquad, &
-          rfac0, nquad, wneartmp)
-
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
-        do i=1,nquad
-          wnear(1,i) = wneartmp(i)
-        enddo
-!$OMP END PARALLEL D
-
+          rfac0, nquad, wnear)
 
         endif
-
+            
         return
         end

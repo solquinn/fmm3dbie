@@ -1,26 +1,47 @@
-function [val] = green(src,targ)
-%HELM3D.GREEN evaluate the laplace green's function
-% for the given sources and targets
+
+function [val,grad,hess] = green(src,targ,nolog)
+
+if (nargin < 3)
+    nolog = false;
+end
 
 [~,ns] = size(src);
 [~,nt] = size(targ);
 
-xs = repmat(src(1,:),nt,1);
-ys = repmat(src(2,:),nt,1);
+rx = bsxfun(@minus,targ(1,:).',src(1,:));
+ry = bsxfun(@minus,targ(2,:).',src(2,:));
+r2 = rx.^2+ry.^2;
 
-xt = repmat(targ(1,:).',1,ns);
-yt = repmat(targ(2,:).',1,ns);
 
-rx = xt-xs;
-ry = yt-ys;
+if (nargout > 0) 
+    
+    if nolog
+        val = [];
+    else
+        val = -log(r2)/(4.0*pi);
+    end
+    
+end
 
-rx2 = rx.*rx;
-ry2 = ry.*ry;
+if nargout > 1 
 
-r2 = rx2+ry2;
+    grad = zeros(nt,ns,2);
 
-r = sqrt(r2);
+    grad(:,:,1) = -rx./(2.0*pi*r2);
+    grad(:,:,2) = -ry./(2.0*pi*r2);
+    
+end
 
-val = -(1/(2*pi))*log(r);
+if nargout > 2 
+    rx2 = rx.*rx;
+    ry2 = ry.*ry;
 
+
+    r4 = r2.*r2;
+
+    hess = zeros(nt,ns,3);
+
+    hess(:,:,1) = rx2./(pi*r4)-1.0./(2.0*pi*r2);
+    hess(:,:,2) = rx.*ry./(pi*r4);
+    hess(:,:,3) = ry2./(pi*r4)-1.0./(2.0*pi*r2);
 end

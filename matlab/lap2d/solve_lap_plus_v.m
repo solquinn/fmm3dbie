@@ -40,6 +40,7 @@ resid = get_surface_laplacian(S,u) + V.*u - rhs;
 
 nexttile 
 scatter(S.r(1,:),S.r(2,:),8,log10(abs(resid)))
+axis square
 colorbar
 title('log_{10} residual')
 
