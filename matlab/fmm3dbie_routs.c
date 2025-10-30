@@ -16787,7 +16787,7 @@ mw_err_label:
 
 /* ---- fmm3dbie_routs.mw: 5375 ----
  * getnearquad_lap2d_slp(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, double[1] eps, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad] A);
- * Also at fmm3dbie_routs.mw: 5693
+ * Also at fmm3dbie_routs.mw: 5698
  */
 static const char* stubids97_ = "getnearquad_lap2d_slp(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io double[x])";
 
@@ -17058,6 +17058,7 @@ mw_err_label:
 
 /* ---- fmm3dbie_routs.mw: 5554 ----
  * getnearquad_lap2d_sprime_neu(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, int[ntarg] ipatch_id, double[2, ntarg] uvs_targ, double[1] eps, dcomplex[1] zpars, int[1] iquadtype, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad] A);
+ * Also at fmm3dbie_routs.mw: 5813
  */
 static const char* stubids99_ = "getnearquad_lap2d_sprime_neu(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io double[x])";
 
@@ -17785,12 +17786,12 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- fmm3dbie_routs.mw: 5750 ----
+/* ---- fmm3dbie_routs.mw: 5846 ----
  * get_centroid_rads(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, inout double[n3, npatches] cms, inout double[npatches] rads);
  */
-static const char* stubids103_ = "get_centroid_rads(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], io double[xx], io double[x])";
+static const char* stubids104_ = "get_centroid_rads(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], io double[xx], io double[x])";
 
-void mexStub103(int nlhs, mxArray* plhs[],
+void mexStub104(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -17914,7 +17915,7 @@ void mexStub103(int nlhs, mxArray* plhs[],
     } else
         in7_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[103]++;
+        mexprofrecord_[104]++;
     MWF77_get_centroid_rads(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_);
     plhs[0] = mxCreateDoubleMatrix(dim15_, dim16_, mxREAL);
     mxWrapCopy_double(plhs[0], in6_, dim15_*dim16_);
@@ -18044,14 +18045,14 @@ void mexFunction(int nlhs, mxArray* plhs[],
         mexStub99(nlhs,plhs, nrhs-1,prhs+1);
     else if (strcmp(id, stubids100_) == 0)
         mexStub100(nlhs,plhs, nrhs-1,prhs+1);
-    else if (strcmp(id, stubids103_) == 0)
-        mexStub103(nlhs,plhs, nrhs-1,prhs+1);
+    else if (strcmp(id, stubids104_) == 0)
+        mexStub104(nlhs,plhs, nrhs-1,prhs+1);
     else if (strcmp(id, "*profile on*") == 0) {
         if (!mexprofrecord_) {
-            mexprofrecord_ = (int*) malloc(104 * sizeof(int));
+            mexprofrecord_ = (int*) malloc(105 * sizeof(int));
             mexLock();
         }
-        memset(mexprofrecord_, 0, 104 * sizeof(int));
+        memset(mexprofrecord_, 0, 105 * sizeof(int));
     } else if (strcmp(id, "*profile off*") == 0) {
         if (mexprofrecord_) {
             free(mexprofrecord_);
@@ -18107,10 +18108,10 @@ void mexFunction(int nlhs, mxArray* plhs[],
         mexPrintf("%d calls to fmm3dbie_routs.mw:5012 (fmm3dbie_routs.mw:5019)\n", mexprofrecord_[88]);
         mexPrintf("%d calls to fmm3dbie_routs.mw:5151\n", mexprofrecord_[94]);
         mexPrintf("%d calls to fmm3dbie_routs.mw:5321\n", mexprofrecord_[96]);
-        mexPrintf("%d calls to fmm3dbie_routs.mw:5375 (fmm3dbie_routs.mw:5693)\n", mexprofrecord_[97]);
-        mexPrintf("%d calls to fmm3dbie_routs.mw:5554\n", mexprofrecord_[99]);
+        mexPrintf("%d calls to fmm3dbie_routs.mw:5375 (fmm3dbie_routs.mw:5698)\n", mexprofrecord_[97]);
+        mexPrintf("%d calls to fmm3dbie_routs.mw:5554 (fmm3dbie_routs.mw:5813)\n", mexprofrecord_[99]);
         mexPrintf("%d calls to fmm3dbie_routs.mw:5623\n", mexprofrecord_[100]);
-        mexPrintf("%d calls to fmm3dbie_routs.mw:5750\n", mexprofrecord_[103]);
+        mexPrintf("%d calls to fmm3dbie_routs.mw:5846\n", mexprofrecord_[104]);
     } else if (strcmp(id, "*profile log*") == 0) {
         FILE* logfp;
         if (nrhs != 2 || mxGetString(prhs[1], id, sizeof(id)) != 0)
@@ -18166,10 +18167,10 @@ void mexFunction(int nlhs, mxArray* plhs[],
         fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5012 (fmm3dbie_routs.mw:5019)\n", mexprofrecord_[88]);
         fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5151\n", mexprofrecord_[94]);
         fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5321\n", mexprofrecord_[96]);
-        fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5375 (fmm3dbie_routs.mw:5693)\n", mexprofrecord_[97]);
-        fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5554\n", mexprofrecord_[99]);
+        fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5375 (fmm3dbie_routs.mw:5698)\n", mexprofrecord_[97]);
+        fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5554 (fmm3dbie_routs.mw:5813)\n", mexprofrecord_[99]);
         fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5623\n", mexprofrecord_[100]);
-        fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5750\n", mexprofrecord_[103]);
+        fprintf(logfp, "%d calls to fmm3dbie_routs.mw:5846\n", mexprofrecord_[104]);
         fclose(logfp);
     } else
         mexErrMsgTxt("Unknown identifier");

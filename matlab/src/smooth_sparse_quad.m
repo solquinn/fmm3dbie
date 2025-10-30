@@ -15,6 +15,7 @@ function Asmth = smooth_sparse_quad(kern,targs,S,row_ptr,col_ind,norderup,lbat)
 
     [nt,~] = size(row_ptr);
     ntarg = nt-1;
+    ndtarg = size(targs,1);
     nrep = zeros(ntarg,1);
     istarts = row_ptr(1:end-1);
     iends = row_ptr(2:end)-1;
@@ -39,12 +40,25 @@ function Asmth = smooth_sparse_quad(kern,targs,S,row_ptr,col_ind,norderup,lbat)
     
     nbat = ceil(nnz/lbat);
     
-    for k = 1:nbat
-        ks = (lbat*(k-1)+1):min(lbat*k,nnz);
-        rsrc = S_over.r(:,icol_ind(ks));
-        rtarg = targs(:,irow_ind(ks));
-        rnear = rtarg - rsrc;
-        vals(ks) = kern(struct('r',[0;0;0]),struct('r',rnear)).*S_over.wts(icol_ind(ks));
+
+    if ndtarg < 4
+        for k = 1:nbat
+            ks = (lbat*(k-1)+1):min(lbat*k,nnz);
+            rsrc = S_over.r(:,icol_ind(ks));
+            rtarg = targs(:,irow_ind(ks));
+            rnear = rtarg - rsrc;
+            vals(ks) = kern(struct('r',[0;0;0]),struct('r',rnear)).*S_over.wts(icol_ind(ks));
+        end
+    else
+        for k = 1:nbat
+            ks = (lbat*(k-1)+1):min(lbat*k,nnz);
+            rsrc = S_over.r(:,icol_ind(ks));
+            rtarg = targs(:,irow_ind(ks));
+            rnear = [];
+            rnear.r = rtarg(1:3,:) - rsrc(1:3,:);
+            rnear.n = rtarg(10:12,:);
+            vals(ks) = kern(struct('r',[0;0;0]),rnear).*S_over.wts(icol_ind(ks));
+        end
     end
   
    Asmth = sparse(irow_ind,icol_ind, vals, ntarg, S_over.npts);

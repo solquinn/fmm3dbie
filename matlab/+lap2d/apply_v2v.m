@@ -1,4 +1,4 @@
-function val = apply_lap2d_v2v(S,mu,v2v_cor,nover)
+function val = apply_v2v(S,mu,Av2v_cor,nover,eps)
     
     [S_over,xinterp] = oversample(S,nover);
     test_fn_over = xinterp*mu;
@@ -14,6 +14,6 @@ function val = apply_lap2d_v2v(S,mu,v2v_cor,nover)
     targ = S.r(1:2,:);
     U = lfmm2d(eps,srcinfo,0,targ,1);
     val = -1/(2*pi)*U.pottarg.';
-    val = val + v2v_cor*mu(:);
+    val = val + Av2v_cor*mu(:);
 
 end
