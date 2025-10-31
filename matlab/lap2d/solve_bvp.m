@@ -17,11 +17,10 @@ hold on
 plot(chnkr,'x-')
 view(0,90)
 
-%%
 V = eval_gauss(S.r);
 %rhs = eval_gauss(xs);
 
-%%
+%% v2v
 % A = lap2d.slp_matgen(S,1e-9);
 % lhs_11 = -eye(S.npts) + V.*A;
 
@@ -32,13 +31,21 @@ toc;
 v2v_apply = @(mu) lap2d.apply_v2v(S,mu,Av2v_cor,nover,1e-12);
 lhs_11 = @(mu) - mu + V.*v2v_apply(mu);
 
-%%
+%% b2v
 
-%fkern = chnk.lap2d.kern;
-fkern = @(s,t) chnk.lap2d.kern(s,t,'s');
-lhs_12 = V.*chunkerkernevalmat(chnkr,fkern,S.r(1:2,:));
+% fkern = chnk.lap2d.kern;
+% fkern = @(s,t) chnk.lap2d.kern(s,t,'s');
+% lhs_12 = V.*chunkerkernevalmat(chnkr,fkern,S.r(1:2,:));
 
-%%
+l2d_s = kernel('l','s');
+
+opts = []; opts.corrections = true;
+Ab2v_cor = chunkerkernevalmat(chnkr,l2d_s,S.r(1:2,:),opts);
+
+apply_b2v = @(mu) lap2d.apply_b2v_neu(S,chnkr,mu,Ab2v_cor,1e-12);
+lhs_12 = @(mu) V.*apply_b2v(mu);
+
+%% v2b
 targinfo=[];
 targinfo.r = [chnkr.r(:,:);0*chnkr.r(1,:)];
 targinfo.n = [chnkr.n(:,:);0*chnkr.n(1,:)];
@@ -51,14 +58,14 @@ toc;
 v2b_apply = @(mu) lap2d.apply_v2b_neu(S,targinfo,mu,Av2b_cor,nover,1e-12);
 lhs_21 = @(mu) v2b_apply(mu);
 
-%%
-fkern_prime = @(s,t) chnk.lap2d.kern(s,t,'sprime');
-lhs_22 = 0.5*eye(chnkr.npt)+chunkermat(chnkr,fkern_prime); %0.5*eye(n)... -
+%% b2b
+l2d_sp = kernel('l','sp');
+lhs_22 = 0.5*eye(chnkr.npt)+chunkermat(chnkr,l2d_sp); %0.5*eye(n)... -
 
 %%
 
 % lhs = [lhs_11, lhs_12; lhs_21, lhs_22];
-lhs = @(x) [lhs_11(x(1:S.npts)) + lhs_12*x(S.npts+1:end); lhs_21(x(1:S.npts)) + lhs_22*x(S.npts+1:end)];
+lhs = @(x) [lhs_11(x(1:S.npts)) + lhs_12(x(S.npts+1:end)); lhs_21(x(1:S.npts)) + lhs_22*x(S.npts+1:end)];
 
 %rhs_1 = eval_gauss(xs);
 %rhs_2 = zeros(n,1);
