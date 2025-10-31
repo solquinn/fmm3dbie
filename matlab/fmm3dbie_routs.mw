@@ -5374,6 +5374,8 @@ function A = slp_matgen(S, eps)
 
     # FORTRAN getnearquad_lap2d_slp(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, double[1] eps, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0,int[1] nquad, inout double[nquad] A);
     
+    A = reshape(A,[S.npts,S.npts]).';
+
 end
 %
 %
@@ -5689,10 +5691,6 @@ function [xmat,nover] = get_quad_cor_sub(S, eps)
 
     iquadtype = 1;
 
-    % Q = []; Q.targinfo = S; Q.rfac = rfac; Q.wavenumber = 0; 
-    % Q.row_ptr = row_ptr; Q.col_ind = col_ind; Q.kernel_order = -1;
-    % novers = get_oversampling_parameters(S,Q,eps);
-
     wnear = zeros(nquad,1,'like',1);
 
     # FORTRAN getnearquad_lap2d_slp(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, double[1] eps, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0,int[1] nquad, inout double[nquad] wnear);
@@ -5723,8 +5721,12 @@ function [xmat,nover] = get_quad_cor_sub(S, eps)
     
     xmat = sparse(irow_ind,icol_ind, wnear, ntarg, S.npts);
 
-    norderup = 4;
-    nover = S.norders(1) + norderup;
+    Q = []; Q.targinfo = S; Q.rfac = rfac; Q.wavenumber = 0; 
+    Q.row_ptr = row_ptr; Q.col_ind = col_ind; Q.kernel_order = -1;
+    novers = get_oversampling_parameters(S,Q,1e2*eps);
+    nover = max(novers);
+    norderup = nover - S.norders(1); % assumes that patches are all the same order
+
     Asmth_over = smooth_sparse_quad(lap2d_kern,targs,S,row_ptr,col_ind,norderup); 
 
     xmat = xmat - Asmth_over;
@@ -5783,7 +5785,7 @@ function [xmat,nover] = get_quad_cor_v2b_neu(S, targinfo, eps, uv_bndry, patch_i
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % wts = get_qwts_f(npatches,norders,ixyzs,iptype,ntarg,srcvals);
 
-    if nargin < 6
+    if nargin < 4
         ipatch_id = zeros(ntarg,1);
         uvs_targ = zeros(2,ntarg);
     else
@@ -5814,12 +5816,15 @@ function [xmat,nover] = get_quad_cor_v2b_neu(S, targinfo, eps, uv_bndry, patch_i
 
     xmat = conv_rsc_to_spmat(S,row_ptr,col_ind,A);
 
-    norderup = 4;
-    nover = S.norders(1) + norderup;
+    Q = []; Q.targinfo = targinfo; Q.rfac = rfac; Q.wavenumber = 0; 
+    Q.row_ptr = row_ptr; Q.col_ind = col_ind; Q.kernel_order = -1;
+    novers = get_oversampling_parameters(S,Q,1e2*eps);
+    nover = max(novers);
+    norderup = nover - S.norders(1);  % assumes that patches are all the same order
+
     Asmth_over = smooth_sparse_quad(l2d_sprime,targs,S,row_ptr,col_ind,norderup); 
 
     xmat = xmat - Asmth_over;
-
 end
 %
 %

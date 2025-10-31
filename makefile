@@ -143,7 +143,8 @@ STOKOBJS = $(STOK)/stok_comb_vel.o
 # Kernels
 KER = src/kernels
 KOBJS = $(KER)/helm_kernels.o $(KER)/lap_kernels.o $(KER)/DPIE_kernels.o \
-	$(KER)/yuk_kernels.o $(KER)/stok_kernels.o $(KER)/em_kernels.o
+	$(KER)/yuk_kernels.o $(KER)/stok_kernels.o $(KER)/em_kernels.o \
+	$(KER)/hank103.o
 
 # Quadrature wrappers
 QUAD = src/quadratures

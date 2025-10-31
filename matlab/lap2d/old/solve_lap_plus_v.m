@@ -1,4 +1,4 @@
-S = geometries.disk([],[],[4 4 4],8);
+S = geometries.disk([],[],[4 4 4],12);
 
 figure(1); clf
 plot(S,rand(S.npatches,1))
@@ -9,16 +9,15 @@ toc;
 
 v2v_apply = @(mu) lap2d.apply_v2v(S,mu,v2v_cor,nover,1e-12);
 
-V = eval_gauss(S.r);
-rhs = eval_gauss(S.r);
+V = eval_V(S.r);
+rhs = eval_rhs(S.r);
 
 lhs = @(mu) -mu + V.*v2v_apply(mu);
 
-mu = gmres(@(mu) lhs(mu),rhs,[],1e-10,2000);
+mu = gmres(@(mu) lhs(mu),V.*rhs,[],1e-10,2000);
 u = v2v_apply(mu);
 
-resid = abs(get_surface_laplacian(S,u) + V.*u - rhs) / max(abs(mu));
-
+resid = abs(get_surface_laplacian(S,u) + V.*u - V.*rhs);
 
 t = tiledlayout(1,2);
 nexttile
@@ -34,9 +33,16 @@ colorbar
 title('log_{10} residual')
 
 
-function val = eval_gauss(targ)
+function V = eval_V(targ)
 
-val = exp( - 10*targ(1,:).^2 - 10*targ(2,:).^2 );
-val = val(:);
+V = exp( - 10*(targ(1,:)).^2 - 10*(targ(2,:)).^2 );
+V = V(:);
+
+end
+
+function rhs = eval_rhs(targ)
+
+rhs = exp( - 10*(targ(1,:)-0.25).^2 - 10*(targ(2,:)-0.25).^2 );
+rhs = rhs(:);
 
 end

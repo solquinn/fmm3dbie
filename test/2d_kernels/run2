@@ -1,0 +1,2 @@
+gfortran -std=legacy test_helm2d.f -o ./int2 ../../src/kernels/helm_kernels.f90 ../../src/kernels/hank103.f
+./int2

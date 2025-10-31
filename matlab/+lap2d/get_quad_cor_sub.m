@@ -57,10 +57,6 @@ function [xmat,nover] = get_quad_cor_sub(S, eps)
 
     iquadtype = 1;
 
-    % Q = []; Q.targinfo = S; Q.rfac = rfac; Q.wavenumber = 0; 
-    % Q.row_ptr = row_ptr; Q.col_ind = col_ind; Q.kernel_order = -1;
-    % novers = get_oversampling_parameters(S,Q,eps);
-
     wnear = zeros(nquad,1,'like',1);
 
     mex_id_ = 'getnearquad_lap2d_slp(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io double[x])';
@@ -92,8 +88,12 @@ function [xmat,nover] = get_quad_cor_sub(S, eps)
     
     xmat = sparse(irow_ind,icol_ind, wnear, ntarg, S.npts);
 
-    norderup = 4;
-    nover = S.norders(1) + norderup;
+    Q = []; Q.targinfo = S; Q.rfac = rfac; Q.wavenumber = 0; 
+    Q.row_ptr = row_ptr; Q.col_ind = col_ind; Q.kernel_order = -1;
+    novers = get_oversampling_parameters(S,Q,1e2*eps);
+    nover = max(novers);
+    norderup = nover - S.norders(1); % assumes that patches are all the same order
+
     Asmth_over = smooth_sparse_quad(lap2d_kern,targs,S,row_ptr,col_ind,norderup); 
 
     xmat = xmat - Asmth_over;

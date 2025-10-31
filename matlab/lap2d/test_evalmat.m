@@ -12,7 +12,9 @@ val = integral2(@(r,t) -1/(2*pi)*r.*log(sqrt((r.*cos(t) - targinfo.r(1)).^2 + (r
 
 val2 = A*dens;
 
-abs(val - val2) / abs(val)
+err= abs(val - val2);
+
+fprintf('relative error: %5.5e\n', vecnorm(err,2) / vecnorm(val,2));
 
 function val = test_fn(x,y)
 

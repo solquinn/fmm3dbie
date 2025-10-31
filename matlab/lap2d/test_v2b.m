@@ -24,7 +24,11 @@ val = Av2b*dens;
 d1 = [-3/2	2	-1/2]/h;
 val2 = d1*(Aeval*dens);
 
-abs(val - val2) / abs(val)
+err = abs(val - val2);
+
+fprintf('relative error: %5.5e\n', vecnorm(err) / vecnorm(val));
+
+
 
 
 function val = test_fn(x,y)

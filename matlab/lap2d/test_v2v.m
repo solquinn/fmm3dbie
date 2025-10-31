@@ -5,7 +5,6 @@ S = geometries.disk([],[],[4 4 4],8);
 
 %%
 A = lap2d.slp_matgen(S,1e-10);
-A = reshape(A,[S.npts,S.npts]).';
 
 %%
 rs = S.r;
@@ -18,7 +17,7 @@ dens = A*test_fn;
 lapdens = get_surface_laplacian(S,-dens);
 err = abs(test_fn - lapdens);
 
-fprintf('relative l_inf/l_1 error interior: %5.2e\n', vecnorm(err,'Inf') / sum(abs(test_fn(:) .* S.wts(:))));
+fprintf('relative error: %5.5e\n', vecnorm(err) / vecnorm(test_fn));
 
 %%
 figure; 

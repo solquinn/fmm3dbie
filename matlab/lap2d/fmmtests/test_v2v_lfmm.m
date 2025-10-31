@@ -10,7 +10,6 @@ test_fn = test_fn.';
 
 tic;
 A = lap2d.slp_matgen(S,1e-12);
-A = reshape(A,[S.npts,S.npts]).';
 toc;
 
 sol1 = A*test_fn;
